@@ -2,6 +2,20 @@
 
 <div dir="rtl">
 
+## گزارش‌های پروژه (شروع)
+
+برای مشاهده‌ی جزئیات کامل آزمایش و مقایسه‌ها، این دو گزارش را باز کنید:
+
+| نوع گزارش | توضیح | لینک باز کردن |
+|---|---|---|
+| **گزارش اصلی آزمایش** | مدل‌سازی، روش پیشنهادی، سناریوها، جداول نتایج، چالش‌ها و انطباق با صورت تمرین | [final_experiment_report.md](final_experiment_report.md) |
+| **گزارش مقایسه‌محور** | تمرکز روی مقایسه روش‌ها همراه با نمودارهای عملکرد | [comparison_report.md](comparison_report.md) |
+
+- باز کردن گزارش اصلی: [final_experiment_report.md](final_experiment_report.md)
+- باز کردن گزارش مقایسه‌محور: [comparison_report.md](comparison_report.md)
+
+---
+
 ## ۱. صورت مسئله و مدل‌سازی
 
 در این پروژه مسئله‌ی Range Minimum Query روی یک جریان داده پویا بررسی می‌شود. دنباله‌ای در اختیار داریم که:
@@ -220,3 +234,21 @@ python generate_charts.py
 ```bash
 python main.py
 ```
+
+<div dir="rtl">
+
+---
+
+## گزارش‌های پروژه (پایان)
+
+جزئیات کامل در دو گزارش زیر آمده است؛ لطفاً هر دو را باز کنید:
+
+| نوع گزارش | توضیح | لینک باز کردن |
+|---|---|---|
+| **گزارش اصلی آزمایش** | مدل‌سازی، روش پیشنهادی، سناریوها، جداول نتایج، چالش‌ها و انطباق با صورت تمرین | [final_experiment_report.md](final_experiment_report.md) |
+| **گزارش مقایسه‌محور** | تمرکز روی مقایسه روش‌ها همراه با نمودارهای عملکرد | [comparison_report.md](comparison_report.md) |
+
+- باز کردن گزارش اصلی: [final_experiment_report.md](final_experiment_report.md)
+- باز کردن گزارش مقایسه‌محور: [comparison_report.md](comparison_report.md)
+
+</div>
