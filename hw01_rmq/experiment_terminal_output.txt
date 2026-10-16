@@ -1,0 +1,223 @@
+Loaded 1,000,000 values in 0.287s
+
+====================================================================================================
+PART A — STATIC BASELINE (no stream; fixed dataset on the table)
+====================================================================================================
+Data file : rmq_data.csv
+n         : 1,000,000
+
+Building AP-Treap (Proposed) ...
+  build time=5.7070s | peak memory=106.88 MB | structure memory≈92.26 MB | pulse_limit=64, treap_n=1000000, pulse_n=0
+Building Sparse Table ...
+  build time=32.2898s | peak memory=214.05 MB | structure memory≈237.22 MB | levels=20
+Building Block Decomposition ...
+  build time=0.0258s | peak memory=16.08 KB | structure memory≈10.19 KB | block_size=1000, blocks=1000
+Building Fischer-Heun ...
+  build time=14.6003s | peak memory=56.38 MB | structure memory≈62.89 MB | block_size=9, blocks=111112, unique_types=3509
+
+Query batch (AP-Treap (Proposed)         ): 0.6030 ms  (50.252 microseconds per query)
+Query batch (Sparse Table                ): 0.0047 ms  (0.395 microseconds per query)
+Query batch (Block Decomposition         ): 0.7411 ms  (61.755 microseconds per query)
+Query batch (Fischer-Heun                ): 0.0122 ms  (1.013 microseconds per query)
+
+----------------------------------------------------------------------------------------------------
+Static per-query answers (all methods + naive)
+----------------------------------------------------------------------------------------------------
+ #     Left    Right     Proposed       Sparse        Block      Fischer        Naive All match
+ 1        0        9    890898631    890898631    890898631    890898631    890898631 YES
+ 2        0   999999            1            1            1            1            1 YES
+ 3   100000   250000            1            1            1            1            1 YES
+ 4   500000   500000    334002127    334002127    334002127    334002127    334002127 YES
+ 5   750000   999999            1            1            1            1            1 YES
+ 6        0   500000            1            1            1            1            1 YES
+ 7   333333   666666            1            1            1            1            1 YES
+ 8   999900   999999      7485317      7485317      7485317      7485317      7485317 YES
+ 9   670487   728856            1            1            1            1            1 YES
+10    26225   803797            1            1            1            1            1 YES
+11   288389   545176            1            1            1            1            1 YES
+12   234053   380369            1            1            1            1            1 YES
+
+Static accuracy (all equal naive): YES
+
+----------------------------------------------------------------------------------------------------
+Static comparison table (theory + measured)
+----------------------------------------------------------------------------------------------------
+Method                         Preprocess             Insert             Delete      Query        Space
+AP-Treap (Proposed)            O(n log n) O(log n) amortized* O(log n) amortized* O(log n) amortized*         O(n)
+Sparse Table                   O(n log n)    N/A (immutable)    N/A (immutable)       O(1)   O(n log n)
+Block Decomposition                  O(n)    N/A (immutable)    N/A (immutable)      O(√n)         O(n)
+Fischer-Heun                         O(n)    N/A (immutable)    N/A (immutable)       O(1)         O(n)
+
+Method                       Build time (s)  Peak memory Structure memory Microseconds per query
+AP-Treap (Proposed)                  5.7070    106.88 MB         92.26 MB                 50.252
+Sparse Table                        32.2898    214.05 MB        237.22 MB                  0.395
+Block Decomposition                  0.0258     16.08 KB         10.19 KB                 61.755
+Fischer-Heun                        14.6003     56.38 MB         62.89 MB                  1.013
+
+Static practical notes:
+  - Sparse Table: fastest queries, highest memory, no updates.
+  - Block Decomposition: lightest structure, slower queries.
+  - Fischer-Heun: best classic static tradeoff (O(n)/O(1)).
+  - AP-Treap: competitive static correctness; pays log n per query,
+    but is the only method here that later supports true updates.
+
+====================================================================================================
+PART B — DYNAMIC DATA STREAM (insert / delete / query on live state)
+====================================================================================================
+Stream source prefix : 20,000 values from rmq_data.csv
+Scenarios            : burst_arrival, update_heavy, query_heavy, mixed_waves, sliding_churn
+
+----------------------------------------------------------------------------------------------------
+Dynamic theory table (eager costs for classics; AP-Treap true dynamic)
+----------------------------------------------------------------------------------------------------
+Method                             Preprocess         Insert         Delete          Query       Memory
+AP-Treap (Proposed)                     O(1)*       O(log n)       O(log n)       O(log n)         O(n)
+Sparse Table (rebuild)             O(n log n)     O(n log n)     O(n log n)           O(1)   O(n log n)
+Block Decomposition (rebuild)            O(n)           O(n)           O(n)          O(√n)         O(n)
+Fischer-Heun (rebuild)                   O(n)           O(n)           O(n)           O(1)         O(n)
+* proposed starts empty in the stream; pulse absorbs appends.
+Measured classic policy = lazy rebuild-on-query (see README.md).
+
+====================================================================================================
+Scenario: burst_arrival   | event count=4800
+====================================================================================================
+  running AP-Treap (Proposed) ...
+    total time=0.0870s | insert time=0.0000s | delete time=0.0000s | append time=0.0302s | query time=0.0353s | peak memory=499.19 KB | accuracy=1.000 | update/query ratio=5.00 | failed queries=0
+  running Sparse Table (rebuild) ...
+    total time=0.0405s | insert time=0.0000s | delete time=0.0000s | append time=0.0010s | query time=0.0204s | peak memory=715.93 KB | accuracy=1.000 | update/query ratio=5.00 | failed queries=0
+  running Block Decomposition (rebuild) ...
+    total time=0.0369s | insert time=0.0000s | delete time=0.0000s | append time=0.0020s | query time=0.0091s | peak memory=94.47 KB | accuracy=1.000 | update/query ratio=5.00 | failed queries=0
+  running Fischer-Heun (rebuild) ...
+    total time=0.0483s | insert time=0.0000s | delete time=0.0000s | append time=0.0018s | query time=0.0236s | peak memory=399.36 KB | accuracy=1.000 | update/query ratio=5.00 | failed queries=0
+
+Method                           Total time (s) Insert time (s) Delete time (s) Append time (s) Query time (s)  Peak memory Accuracy Failed queries
+AP-Treap (Proposed)                      0.0870          0.0000          0.0000          0.0302         0.0353    499.19 KB    1.000              0
+Sparse Table (rebuild)                   0.0405          0.0000          0.0000          0.0010         0.0204    715.93 KB    1.000              0
+Block Decomposition (rebuild)            0.0369          0.0000          0.0000          0.0020         0.0091     94.47 KB    1.000              0
+Fischer-Heun (rebuild)                   0.0483          0.0000          0.0000          0.0018         0.0236    399.36 KB    1.000              0
+
+====================================================================================================
+Scenario: update_heavy   | event count=3500
+====================================================================================================
+  running AP-Treap (Proposed) ...
+    total time=0.0599s | insert time=0.0201s | delete time=0.0136s | append time=0.0065s | query time=0.0078s | peak memory=206.22 KB | accuracy=1.000 | update/query ratio=10.29 | failed queries=0
+  running Sparse Table (rebuild) ...
+    total time=1.9162s | insert time=0.0019s | delete time=0.0017s | append time=0.0018s | query time=1.8928s | peak memory=527.89 KB | accuracy=1.000 | update/query ratio=10.29 | failed queries=0
+  running Block Decomposition (rebuild) ...
+    total time=0.0410s | insert time=0.0014s | delete time=0.0014s | append time=0.0007s | query time=0.0252s | peak memory=40.43 KB | accuracy=1.000 | update/query ratio=10.29 | failed queries=0
+  running Fischer-Heun (rebuild) ...
+    total time=2.3363s | insert time=0.0023s | delete time=0.0021s | append time=0.0008s | query time=2.3130s | peak memory=307.08 KB | accuracy=1.000 | update/query ratio=10.29 | failed queries=0
+
+Method                           Total time (s) Insert time (s) Delete time (s) Append time (s) Query time (s)  Peak memory Accuracy Failed queries
+AP-Treap (Proposed)                      0.0599          0.0201          0.0136          0.0065         0.0078    206.22 KB    1.000              0
+Sparse Table (rebuild)                   1.9162          0.0019          0.0017          0.0018         1.8928    527.89 KB    1.000              0
+Block Decomposition (rebuild)            0.0410          0.0014          0.0014          0.0007         0.0252     40.43 KB    1.000              0
+Fischer-Heun (rebuild)                   2.3363          0.0023          0.0021          0.0008         2.3130    307.08 KB    1.000              0
+
+====================================================================================================
+Scenario: query_heavy   | event count=5500
+====================================================================================================
+  running AP-Treap (Proposed) ...
+    total time=0.2010s | insert time=0.0000s | delete time=0.0045s | append time=0.0151s | query time=0.1066s | peak memory=379.55 KB | accuracy=1.000 | update/query ratio=1.40 | failed queries=0
+  running Sparse Table (rebuild) ...
+    total time=4.2280s | insert time=0.0000s | delete time=0.0005s | append time=0.0020s | query time=4.1451s | peak memory=1009.08 KB | accuracy=1.000 | update/query ratio=1.40 | failed queries=0
+  running Block Decomposition (rebuild) ...
+    total time=0.1799s | insert time=0.0000s | delete time=0.0002s | append time=0.0020s | query time=0.0855s | peak memory=74.69 KB | accuracy=1.000 | update/query ratio=1.40 | failed queries=0
+  running Fischer-Heun (rebuild) ...
+    total time=7.1768s | insert time=0.0000s | delete time=0.0005s | append time=0.0189s | query time=6.9795s | peak memory=538.34 KB | accuracy=1.000 | update/query ratio=1.40 | failed queries=0
+
+Method                           Total time (s) Insert time (s) Delete time (s) Append time (s) Query time (s)  Peak memory Accuracy Failed queries
+AP-Treap (Proposed)                      0.2010          0.0000          0.0045          0.0151         0.1066    379.55 KB    1.000              0
+Sparse Table (rebuild)                   4.2280          0.0000          0.0005          0.0020         4.1451   1009.08 KB    1.000              0
+Block Decomposition (rebuild)            0.1799          0.0000          0.0002          0.0020         0.0855     74.69 KB    1.000              0
+Fischer-Heun (rebuild)                   7.1768          0.0000          0.0005          0.0189         6.9795    538.34 KB    1.000              0
+
+====================================================================================================
+Scenario: mixed_waves   | event count=3900
+====================================================================================================
+  running AP-Treap (Proposed) ...
+    total time=0.1279s | insert time=0.0106s | delete time=0.0079s | append time=0.0211s | query time=0.0569s | peak memory=246.73 KB | accuracy=1.000 | update/query ratio=2.00 | failed queries=0
+  running Sparse Table (rebuild) ...
+    total time=0.1473s | insert time=0.0087s | delete time=0.0005s | append time=0.0014s | query time=0.0871s | peak memory=507.41 KB | accuracy=1.000 | update/query ratio=2.00 | failed queries=0
+  running Block Decomposition (rebuild) ...
+    total time=0.0506s | insert time=0.0030s | delete time=0.0007s | append time=0.0062s | query time=0.0081s | peak memory=46.91 KB | accuracy=1.000 | update/query ratio=2.00 | failed queries=0
+  running Fischer-Heun (rebuild) ...
+    total time=0.0954s | insert time=0.0004s | delete time=0.0007s | append time=0.0011s | query time=0.0570s | peak memory=289.38 KB | accuracy=1.000 | update/query ratio=2.00 | failed queries=0
+
+Method                           Total time (s) Insert time (s) Delete time (s) Append time (s) Query time (s)  Peak memory Accuracy Failed queries
+AP-Treap (Proposed)                      0.1279          0.0106          0.0079          0.0211         0.0569    246.73 KB    1.000              0
+Sparse Table (rebuild)                   0.1473          0.0087          0.0005          0.0014         0.0871    507.41 KB    1.000              0
+Block Decomposition (rebuild)            0.0506          0.0030          0.0007          0.0062         0.0081     46.91 KB    1.000              0
+Fischer-Heun (rebuild)                   0.0954          0.0004          0.0007          0.0011         0.0570    289.38 KB    1.000              0
+
+====================================================================================================
+Scenario: sliding_churn   | event count=6644
+====================================================================================================
+  running AP-Treap (Proposed) ...
+    total time=0.1769s | insert time=0.0000s | delete time=0.0786s | append time=0.0157s | query time=0.0323s | peak memory=122.55 KB | accuracy=1.000 | update/query ratio=9.32 | failed queries=0
+  running Sparse Table (rebuild) ...
+    total time=3.8803s | insert time=0.0000s | delete time=0.0118s | append time=0.0037s | query time=3.8240s | peak memory=300.48 KB | accuracy=1.000 | update/query ratio=9.32 | failed queries=0
+  running Block Decomposition (rebuild) ...
+    total time=0.0933s | insert time=0.0000s | delete time=0.0043s | append time=0.0024s | query time=0.0562s | peak memory=25.16 KB | accuracy=1.000 | update/query ratio=9.32 | failed queries=0
+  running Fischer-Heun (rebuild) ...
+    total time=3.3769s | insert time=0.0000s | delete time=0.0048s | append time=0.0035s | query time=3.3324s | peak memory=185.21 KB | accuracy=1.000 | update/query ratio=9.32 | failed queries=0
+
+Method                           Total time (s) Insert time (s) Delete time (s) Append time (s) Query time (s)  Peak memory Accuracy Failed queries
+AP-Treap (Proposed)                      0.1769          0.0000          0.0786          0.0157         0.0323    122.55 KB    1.000              0
+Sparse Table (rebuild)                   3.8803          0.0000          0.0118          0.0037         3.8240    300.48 KB    1.000              0
+Block Decomposition (rebuild)            0.0933          0.0000          0.0043          0.0024         0.0562     25.16 KB    1.000              0
+Fischer-Heun (rebuild)                   3.3769          0.0000          0.0048          0.0035         3.3324    185.21 KB    1.000              0
+
+====================================================================================================
+PART C — FINAL SUMMARY TABLE ACROSS ALL STREAM SCENARIOS
+====================================================================================================
+Each row is one (scenario, method) pair on the same event log. Times are wall-clock seconds; accuracy is vs naive ground truth.
+
+Scenario         Method                           Total time (s) Query time (s)  Peak memory Accuracy Update/query ratio Failed queries
+--------------------------------------------------------------------------------------------------------------------------------------------
+burst_arrival    AP-Treap (Proposed)                      0.0870         0.0353    499.19 KB    1.000               5.00              0
+burst_arrival    Sparse Table (rebuild)                   0.0405         0.0204    715.93 KB    1.000               5.00              0
+burst_arrival    Block Decomposition (rebuild)            0.0369         0.0091     94.47 KB    1.000               5.00              0
+burst_arrival    Fischer-Heun (rebuild)                   0.0483         0.0236    399.36 KB    1.000               5.00              0
+update_heavy     AP-Treap (Proposed)                      0.0599         0.0078    206.22 KB    1.000              10.29              0
+update_heavy     Sparse Table (rebuild)                   1.9162         1.8928    527.89 KB    1.000              10.29              0
+update_heavy     Block Decomposition (rebuild)            0.0410         0.0252     40.43 KB    1.000              10.29              0
+update_heavy     Fischer-Heun (rebuild)                   2.3363         2.3130    307.08 KB    1.000              10.29              0
+query_heavy      AP-Treap (Proposed)                      0.2010         0.1066    379.55 KB    1.000               1.40              0
+query_heavy      Sparse Table (rebuild)                   4.2280         4.1451   1009.08 KB    1.000               1.40              0
+query_heavy      Block Decomposition (rebuild)            0.1799         0.0855     74.69 KB    1.000               1.40              0
+query_heavy      Fischer-Heun (rebuild)                   7.1768         6.9795    538.34 KB    1.000               1.40              0
+mixed_waves      AP-Treap (Proposed)                      0.1279         0.0569    246.73 KB    1.000               2.00              0
+mixed_waves      Sparse Table (rebuild)                   0.1473         0.0871    507.41 KB    1.000               2.00              0
+mixed_waves      Block Decomposition (rebuild)            0.0506         0.0081     46.91 KB    1.000               2.00              0
+mixed_waves      Fischer-Heun (rebuild)                   0.0954         0.0570    289.38 KB    1.000               2.00              0
+sliding_churn    AP-Treap (Proposed)                      0.1769         0.0323    122.55 KB    1.000               9.32              0
+sliding_churn    Sparse Table (rebuild)                   3.8803         3.8240    300.48 KB    1.000               9.32              0
+sliding_churn    Block Decomposition (rebuild)            0.0933         0.0562     25.16 KB    1.000               9.32              0
+sliding_churn    Fischer-Heun (rebuild)                   3.3769         3.3324    185.21 KB    1.000               9.32              0
+
+----------------------------------------------------------------------------------------------------
+Fastest method per scenario (by total time)
+----------------------------------------------------------------------------------------------------
+Scenario         Fastest method                   Total time (s) Accuracy Update/query ratio
+burst_arrival    Block Decomposition (rebuild)            0.0369    1.000               5.00
+update_heavy     Block Decomposition (rebuild)            0.0410    1.000              10.29
+query_heavy      Block Decomposition (rebuild)            0.1799    1.000               1.40
+mixed_waves      Block Decomposition (rebuild)            0.0506    1.000               2.00
+sliding_churn    Block Decomposition (rebuild)            0.0933    1.000               9.32
+
+----------------------------------------------------------------------------------------------------
+Decision guide (where what fits)
+----------------------------------------------------------------------------------------------------
+  Load pattern              | Prefer
+  --------------------------|-------------------------------
+  Static / query-only       | Fischer-Heun or Sparse Table
+  Memory-tight static       | Block Decomposition
+  Append-heavy stream       | AP-Treap (pulse helps)
+  Update-heavy stream       | AP-Treap (true O(log n) updates)
+  Sliding-window churn      | AP-Treap
+  Rare updates, many queries| Lazy Fischer-Heun rebuild may compete
+
+====================================================================================================
+Done. See final_experiment_report.md for the full written experiment report.
+====================================================================================================
