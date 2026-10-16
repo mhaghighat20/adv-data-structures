@@ -41,13 +41,17 @@
 | `rmq_data.csv` | داده‌ی یک‌میلیونی تمرین |
 | `README.md` | مستند تحلیلی کوتاه پروژه |
 | `final_experiment_report.md` | گزارش نهایی آزمایش مطابق صورت تمرین |
+| `comparison_report.md` | گزارش مقایسه‌محور همراه با نمودارها |
+| `generate_charts.py` | تولید نمودارهای مقایسه‌ای در پوشه‌ی `charts/` |
+| `charts/` | فایل‌های PNG نمودارها |
 
-اجرای آزمایش کامل:
+اجرای آزمایش کامل و بازتولید نمودارها:
 
 </div>
 
 ```bash
 python main.py
+python generate_charts.py
 ```
 
 <div dir="rtl">
